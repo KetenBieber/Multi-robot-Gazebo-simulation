@@ -1,0 +1,29 @@
+<!-- Created by Keten ,2863861004@qq.com -->
+<!-- This file is used to display a single robot -->
+<launch>
+    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <!-- This empty_corld.launch will set use_Sim_time=true -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+
+    <!-- load the controller.yaml here -->
+    <rosparam file="$(find joint_controller)/config/controllers/new_joint_controller.yaml" command="load"/>
+
+    <!-- load the joints_limits here -->
+    <rosparam file="$(find joint_controller)/config/joint_limit/new_limit.yaml" command="load"/>
+
+    <!-- launch run_description.launch with no namespace(single robot don't need to add the namespace,of cause u can add if u want) -->
+    <include file="$(find joint_controller)/launch/run_description.launch">
+        <arg name="load_default_controllers" value="false"/>
+        <arg name="load_default_joints_limits" value="false"/>
+        <arg name="x" value="0" />
+        <arg name="y" value="0" />
+        <arg name="z" value="0.0" />
+        <arg name="yaw" value="0.0" />
+    </include>
+
+    <!-- Add static transformations for rviz display -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="myarm_tf_pub"  args="0 0 0 0 0 0 map world" />
+
+    <!-- Start Rviz and load pre configuration -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find joint_controller)/config/rviz/single_display.rviz" />
+</launch>

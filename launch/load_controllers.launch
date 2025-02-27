@@ -1,0 +1,23 @@
+<launch>
+    <arg name="namespace" default="" />
+    <arg name="load_default_controllers" default="true"/>
+    <arg name="load_default_joints_limits" default="true"/>
+
+     <group if="$(arg load_default_controllers)">
+        <!-- load the default controller.yaml -->
+        <rosparam file="$(find joint_controller)/config/controllers/joint_controller.yaml" command="load"/>
+    </group>
+
+    <group if="$(arg load_default_joints_limits)">
+        <!-- load the default joints_limits -->
+    </group>
+
+    <!-- use the controller_manager to load the controllers -->
+    <node name="controller_loader" pkg="controller_manager" type="controller_manager" namespace="$(arg namespace)"
+          respawn="false" output="screen"
+          args="load
+          joint_state_controller
+          joint1_position_controller
+          joint1_velocity_controller
+    "/>
+</launch>

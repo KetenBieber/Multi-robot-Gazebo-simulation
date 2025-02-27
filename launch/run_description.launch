@@ -1,0 +1,52 @@
+<!-- ROS1示例 -->
+<launch>
+  <!-- robot namespace，default = / -->
+  <arg name="namespace" default="" />
+  <arg name="load_default_controllers" default="true"/>
+  <arg name="load_default_joints_limits" default="true"/>
+  <!-- spawn position -->
+  <arg name="x" default="0.0" />
+  <arg name="y" default="0.0" />
+  <arg name="z" default="0.5" />
+  <arg name="yaw" default="0" />
+  <!-- launch all the node with namespace -->
+  <group ns="$(arg namespace)">
+    <!-- load URDF with the namespace -->
+    <param name="robot_description"
+      command="$(find xacro)/xacro $(find joint_controller)/urdf/two_link_linkage.urdf_better.xacro 
+                    namespace:=$(arg namespace)" />
+    <!-- spawn the robot and rename with the namespace and the pos robot where to spawn -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
+            args="-param robot_description -urdf -model $(arg namespace)_robot
+            -x $(arg x) 
+            -y $(arg y)
+            -z $(arg z)
+            -Y $(arg yaw)" 
+            output="screen"/>
+
+    <!-- Joint_state_publisher.gui and joint_state_publisher can only start one at a time -->
+    <!-- <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="jsp_gui">
+        <param name="use_gui" value="true"/> 
+    </node> -->
+
+    <!-- launch joint_state_publisher -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>  
+
+    
+    <!-- launch robot_state_publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+      <param name="publish_frequency" type="double" value="50" />
+    </node>
+
+    <!-- launch the load_controllers.launch -->
+    <include file="$(find joint_controller)/launch/load_controllers.launch">
+      <arg name="namespace" value="$(arg namespace)"/>
+      <arg name="load_default_controllers" value="$(arg load_default_controllers)"/>
+      <arg name="load_default_joints_limits" value="$(arg load_default_joints_limits)"/>
+    </include>
+
+    <!-- Using tf_prefix can cover the namespace for joints -->
+    <param name="tf_prefix" value="$(arg namespace)" />
+
+  </group>
+</launch>

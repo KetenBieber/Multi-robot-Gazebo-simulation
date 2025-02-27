@@ -1,0 +1,17 @@
+# 关节限制YAML
+joints_limits:
+  joint1:
+        has_position_limits: true
+        min_position: 0.0
+        max_position: 1.0
+        has_velocity_limits: true
+        max_velocity: 2.0
+        # 加速度limit
+        has_acceleration_limits: true
+        max_acceleration: 5.0
+        # 加加速度limit
+        has_jerk_limits: true
+        max_jerk: 100.0
+        # 力矩limit 
+        has_effort_limits: true
+        max_effort: 5.0

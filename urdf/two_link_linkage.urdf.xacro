@@ -1,0 +1,113 @@
+<!--two_link_linkage.urdf.xacro -->
+<robot name="two_link_linkage" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <xacro:arg name="namespace" default="" />
+
+    <!-- Add namespace prefix for Gazebo plugin and transport -->
+    <xacro:property name="ns_prefix" value="$(arg namespace)/" if="$(arg namespace)" />
+
+    <!-- Fixed to the world -->
+    <link name="world"/>
+    <!-- Define a joint between world and base_link -->
+    <joint name="${ns_prefix}fixed" type="fixed">
+        <parent link="world"/>
+        <child link="${ns_prefix}base_link"/>
+    </joint>
+    <!-- 固定的link -->
+    <link name="${ns_prefix}base_link">
+        <visual>
+            <geometry>
+            <!-- 长方体的长宽高 -->
+            <!-- <box size="0.5 0.3 0.1" />-->
+            <!-- 圆柱的半径和长度 -->
+            <!-- <cylinder radius="0.5" length="0.1" /> -->
+            <!-- 球体的半径-->
+                <box size="0.1 0.1 0.8"/>
+            </geometry>
+            <!-- 位置：x y z 轴位置 roll pitch yaw 旋转 -->
+            <origin xyz="0.0 0.0 0.4" rpy="0.0 0.0 0.0"/>
+            <!-- rgba颜色 -->
+            <material name="black">
+                <color rgba="0.7 0.5 0 0.5" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.4" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.1 0.1 0.8"/>
+            </geometry>
+        </collision>
+        <!-- 惯量矩阵 -->
+        <inertial>
+            <origin xyz="0.0 0.0 0.4" rpy="0 0 0"/>
+            <mass value="0.5"/>
+            <inertia
+                    ixx="0.027083333" ixy="0.0" ixz="0.0"
+                    iyy="0.027083333" iyz="0.0"
+                    izz="0.000833333"/>
+        </inertial>
+    </link>
+
+    <!-- 二连杆的关节 -->
+    <joint name="${ns_prefix}joint1" type="revolute">
+        <axis xyz="0 1 0"/> <!-- 定义旋转轴为 y轴 -->
+        <!-- 常见设置包括：
+            xyz="1 0 0" 表示关节绕x轴旋转
+            xyz="0 1 0" 表示关节绕y轴旋转
+            xyz="0 0 1" 表示关节绕z轴旋转
+        -->
+        <origin xyz="0 0.1 0.75" rpy="0 1.57 0"/> 
+        <!--      limit not work while type="continuous"-->
+        <limit effort="5." velocity="50." lower="-3.14" upper="3.14"/>
+        <dynamics damping="0.01" friction="0.02"/>
+        <parent link="${ns_prefix}base_link"/>
+        <child link="${ns_prefix}rotating_link"/>
+    </joint>
+
+    <!-- 旋转link -->
+    <link name="${ns_prefix}rotating_link">
+        <visual>
+            <geometry>
+                <box size="0.1 0.1 0.3"/>
+            </geometry>
+            <!-- 位置：x y z 轴位置 roll pitch yaw 旋转 -->
+            <origin xyz="0.0 0.1 0.1" rpy="0.0 0.0 0.0"/>
+            <material name="black">
+                <color rgba="0.7 0.5 0 0.5" />
+            </material>            
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.1 0.1" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.1 0.1 0.3"/>
+            </geometry>
+        </collision>
+        <!-- 惯量矩阵 -->
+        <inertial>
+            <origin xyz="0.0 0.1 0.1" rpy="0 0 0"/>
+            <mass value="0.5"/>
+            <inertia
+                    ixx="0.004166667" ixy="0.0" ixz="0.0"
+                    iyy="0.004166667" iyz="0.0"
+                    izz="0.000833333"/>
+        </inertial>
+    </link>
+
+    <transmission name="${ns_prefix}joint1_tran">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${ns_prefix}joint1">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${ns_prefix}joint1_motor">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <mechanicalReduction>19.2032</mechanicalReduction>
+            </actuator>
+    </transmission>
+    <!-- plugin the gazebo_ros_control pluginlib -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>$(arg namespace)</robotNamespace>
+        </plugin>
+    </gazebo>
+
+</robot>
